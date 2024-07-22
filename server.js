@@ -10,6 +10,22 @@ const io = new Server(port, {
 });
 
 // io.of('/')
-io.on('connection', () => {
-  console.log('Connected to the socketIO');
+io.on('connection', (socket) => {
+  console.log(`A user connected with id ${socket.id}`);
+
+  // 發送事件（發給所有人除了觸發者）：訪客造訪
+  socket.broadcast.emit('user-in', socket.id);
+
+  // 註冊事件：用戶的群組訊息
+  socket.on('group-message', (msg) => {
+    console.log(`group-message: ${msg}`);
+    // 發送事件（發給所有人）：返回用戶的群組訊息
+    io.emit('group-message', msg);
+  });
+
+  socket.on('disconnect', () => {
+    console.log(`User with id ${socket.id} disconnected`);
+    // 發送事件（發給所有人除了觸發者）：訪客離開
+    socket.broadcast.emit('user-out', socket.id);
+  });
 });
