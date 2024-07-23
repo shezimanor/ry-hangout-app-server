@@ -13,19 +13,24 @@ const io = new Server(port, {
 io.on('connection', (socket) => {
   console.log(`A user connected with id ${socket.id}`);
 
-  // 發送事件（發給所有人除了觸發者）：訪客造訪
-  socket.broadcast.emit('user-in', socket.id);
+  // 註冊事件：訪客造訪
+  socket.on('user-in', (userName) => {
+    // 發送事件（發給所有人除了觸發者）：訪客造訪
+    socket.broadcast.emit('user-in', userName);
+    // 保存 userName
+    socket.userName = userName;
+  });
 
   // 註冊事件：用戶的群組訊息
   socket.on('group-message', (msg) => {
-    console.log(`group-message: ${msg}`);
-    // 發送事件（發給所有人）：返回用戶的群組訊息
-    io.emit('group-message', msg);
+    // 發送事件（發給所有人除了觸發者）：返回用戶的群組訊息
+    // 觸發者自己在 client 端已經將訊息渲染在畫面上，所以無需發送訊息給他本人
+    socket.broadcast.emit('group-message', msg);
   });
 
   socket.on('disconnect', () => {
     console.log(`User with id ${socket.id} disconnected`);
     // 發送事件（發給所有人除了觸發者）：訪客離開
-    socket.broadcast.emit('user-out', socket.id);
+    socket.broadcast.emit('user-out', socket.userName);
   });
 });
