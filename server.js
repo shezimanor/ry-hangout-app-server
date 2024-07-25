@@ -23,11 +23,24 @@ io.on('connection', (socket) => {
 
   // 註冊事件：用戶的群組訊息
   socket.on('group-message', (msg) => {
-    // 發送事件（發給所有人除了觸發者）：返回用戶的群組訊息
+    // 發送事件（發給所有人除了觸發者）：回傳用戶的群組訊息
     // 觸發者自己在 client 端已經將訊息渲染在畫面上，所以無需發送訊息給他本人
     socket.broadcast.emit('group-message', msg);
   });
 
+  // 註冊事件：用戶的群組訊息
+  socket.on('user-typing', (user) => {
+    // 發送事件（發給所有人除了觸發者）：顯示某個用戶正在打字的狀態
+    socket.broadcast.emit('user-typing', user);
+  });
+
+  // 註冊事件：用戶的群組訊息
+  socket.on('user-not-typing', (user) => {
+    // 發送事件（發給所有人除了觸發者）：取消某個用戶正在打字的狀態
+    socket.broadcast.emit('user-not-typing', user);
+  });
+
+  // 訪客離線
   socket.on('disconnect', () => {
     console.log(`User with id ${socket.id} disconnected`);
     // 發送事件（發給所有人除了觸發者）：訪客離開
