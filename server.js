@@ -11,6 +11,8 @@ const io = new Server(port, {
 
 // 訪客清單
 const connectedUsers = {};
+// 打字中的訪客清單
+const typingUsers = {};
 
 // io.of('/')
 io.on('connection', (socket) => {
@@ -36,15 +38,21 @@ io.on('connection', (socket) => {
   });
 
   // 註冊事件：使用者開始打字
-  socket.on('user-typing', (user) => {
-    // 發送事件（發給所有人除了觸發者）：顯示某個用戶正在打字的狀態
-    socket.broadcast.emit('user-typing', user);
+  socket.on('user-typing', () => {
+    // 將訪客加入訪客清單
+    typingUsers[socket.id] = socket.userName;
+    console.log('typingUsers: ', typingUsers);
+    // 發送事件（發給所有人除了觸發者）：更新訪客們正在打字的狀態
+    socket.broadcast.emit('user-typing-status', typingUsers);
   });
 
   // 註冊事件：使用者結束打字
-  socket.on('user-not-typing', (user) => {
-    // 發送事件（發給所有人除了觸發者）：取消某個用戶正在打字的狀態
-    socket.broadcast.emit('user-not-typing', user);
+  socket.on('user-not-typing', () => {
+    // 將訪客加入訪客清單
+    delete typingUsers[socket.id];
+    console.log('typingUsers: ', typingUsers);
+    // 發送事件（發給所有人除了觸發者）：更新訪客們正在打字的狀態
+    socket.broadcast.emit('user-typing-status', typingUsers);
   });
 
   // 訪客離線
