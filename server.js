@@ -55,6 +55,12 @@ io.on('connection', (socket) => {
     socket.broadcast.emit('user-typing-status', typingUsers);
   });
 
+  // 註冊事件：使用者發送私訊
+  socket.on('private-message', ({ sender, receiverId, msg }) => {
+    // 伺服器收到私訊後，將私訊送給 receiver
+    socket.to(receiverId).emit('private-message', { sender, msg });
+  });
+
   // 訪客離線
   socket.on('disconnect', () => {
     console.log(`User: ${socket.name} with id ${socket.id} disconnected`);
