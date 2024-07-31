@@ -31,10 +31,16 @@ io.on('connection', (socket) => {
   });
 
   // 註冊事件：用戶的群組訊息
-  socket.on('group-message', (msg) => {
+  socket.on('group-message', ({ msg }) => {
     // 發送事件（發給所有人除了觸發者）：回傳用戶的群組訊息
     // 觸發者自己在 client 端已經將訊息渲染在畫面上，所以無需發送訊息給他本人
     socket.broadcast.emit('group-message', msg);
+  });
+
+  // 註冊事件：使用者發送私訊
+  socket.on('private-message', ({ receiverId, msg }) => {
+    // 伺服器收到私訊後，將私訊送給 receiver
+    socket.to(receiverId).emit('private-message', msg);
   });
 
   // 註冊事件：使用者開始打字
@@ -53,12 +59,6 @@ io.on('connection', (socket) => {
     console.log('typingUsers: ', typingUsers);
     // 發送事件（發給所有人除了觸發者）：更新訪客們正在打字的狀態
     socket.broadcast.emit('user-typing-status', typingUsers);
-  });
-
-  // 註冊事件：使用者發送私訊
-  socket.on('private-message', ({ sender, receiverId, msg }) => {
-    // 伺服器收到私訊後，將私訊送給 receiver
-    socket.to(receiverId).emit('private-message', { sender, msg });
   });
 
   // 訪客離線
